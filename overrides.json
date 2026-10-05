@@ -1,0 +1,5 @@
+{
+  "drakmor/nanoDNS": { "payload": "nanodns.elf" },
+  "phantomptr/ps5upload": { "payload": "ps5upload-*.elf" },
+  "Swordpdf/PS5SX2": { "payload": ["PS5SX2Installer*.elf", "PS5SXHelper*.elf"] }
+}
