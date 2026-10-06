@@ -7,7 +7,7 @@
 In PS5 Payload Manager → Settings → Manage Sources → Add Source:
 
 ```
-https://gh.phm.tec.br/ps5-payloads-source/payloads.json
+https://pedrohti.github.io/ps5-payloads-source/payloads.json
 ```
 
 ## How it works
