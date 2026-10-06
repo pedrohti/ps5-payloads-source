@@ -13,9 +13,9 @@ https://pedrohti.github.io/ps5-payloads-source/payloads.json
 ## How it works
 
 - `.github/workflows/build.yml` runs every 6h (30 min after the hub refreshes), on push and on demand.
-- It reads the hub's `data.json`, takes each project's stable version (or the pre-release when there is no stable one), and lists the console payload files (`.elf`, `.bin`, `.lua`) attached to that release.
+- It reads the hub's `data.json` and lists the console payload files (`.elf`, `.bin`, `.lua`) of each project's latest **stable** release and, when newer, its latest **pre-release**. Each becomes its own entry, labelled in the name: `ps5upload (stable)`, `ShadowMountPlus (beta)`, `PoorDS4 (status, rc)`.
 - Links point straight to the original GitHub release; nothing is re-hosted. The SHA-256 comes from GitHub when available, so the manager verifies each download.
-- Files are saved as `Name_version.elf`, which is how the manager detects updates (same scheme as the itsPLK mirror, so payloads installed from it show updates here too).
+- Files are saved as `Name_version.elf`, which is how the manager detects updates (same scheme as the itsPLK mirror, so payloads installed from it show updates here too). Pre-releases use `Name-pre_version.elf`, so both channels can be installed side by side and each one gets its own updates.
 - Projects that go offline leave the hub's list, so they disappear from here automatically.
 - Payloads only published inside a `.zip` are not included (the manager can't extract them).
 - Result is deployed to GitHub Pages; the repo itself never gets bot commits.

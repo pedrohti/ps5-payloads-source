@@ -30,7 +30,12 @@ function pickPayloads(repo, o, assets) {
 // so save as "<base>_<tag>.<ext>" like the itsPLK mirror; base has any version-like part removed,
 // including one glued to the name ("PoorDS4rc51" -> "PoorDS4").
 const baseName = s => s.replace(/[_-]v?\d+[\d.a-z-]*/gi, "").replace(/(rc|alpha|beta)\d+$/i, "").replace(/[^\w.-]/g, "");
-const payloadFilename = (base, tag, asset) => `${baseName(base)}_${tag.replace(/[^\w.-]/g, "")}${asset.match(PAYLOAD)[0]}`;
+// The pre-release channel gets a fixed "-pre" base so it installs side by side with the stable one
+// (the manager keeps one file per base) and beta -> rc still counts as an update.
+const payloadFilename = (base, channel, tag, asset) =>
+  `${baseName(base)}${channel === "pre" ? "-pre" : ""}_${tag.replace(/[^\w.-]/g, "")}${asset.match(PAYLOAD)[0]}`;
+const channelLabel = (channel, tag) =>
+  channel === "stable" ? "stable" : tag.match(/alpha|beta|rc|nightly/i)?.[0].toLowerCase() ?? "pre-release";
 
 const res = await fetch(HUB);
 if (!res.ok) throw new Error(`hub data: ${res.status}`);
@@ -41,23 +46,31 @@ const payloads = [];
 for (const p of projects) {
   const repo = p.url.replace("https://github.com/", "");
   const o = overrides[repo.toLowerCase()] ?? {};
-  const shown = p.stable ?? p.pre;
-  if (o.exclude || !shown) continue;
-  const rel = await gh(`/repos/${repo}/releases/tags/${encodeURIComponent(shown.tag)}`);
-  if (!rel) continue; // version comes from a plain git tag, no release files
-  const files = pickPayloads(repo, o, rel.assets);
-  for (const a of files) payloads.push({
-    name: files.length > 1 && baseName(a.name.replace(PAYLOAD, "")) !== p.name ? `${p.name} (${baseName(a.name.replace(PAYLOAD, ""))})` : p.name,
-    filename: payloadFilename(files.length > 1 ? a.name.replace(PAYLOAD, "") : p.name, shown.tag, a.name),
-    url: a.browser_download_url,
-    source: `${p.url}/releases`,
-    description: p.description,
-    last_update: shown.date,
-    version: shown.tag,
-    category: p.category,
-    checksum: a.digest?.replace(/^sha256:/, ""), // dropped by JSON.stringify when GitHub has none
-  });
-  if (files.length) console.log(`${repo} ${shown.tag}: ${files.map(a => a.name).join(", ")}`);
+  if (o.exclude) continue;
+  // The hub only lists a pre-release when it is newer than the stable one
+  for (const [channel, shown] of [["stable", p.stable], ["pre", p.pre]]) {
+    if (!shown) continue;
+    const rel = await gh(`/repos/${repo}/releases/tags/${encodeURIComponent(shown.tag)}`);
+    if (!rel) continue; // version comes from a plain git tag, no release files
+    const files = pickPayloads(repo, o, rel.assets);
+    for (const a of files) {
+      const file = baseName(a.name.replace(PAYLOAD, ""));
+      const part = file.toLowerCase().startsWith(p.name.toLowerCase()) ? file.slice(p.name.length).replace(/^[-_]+/, "") : file; // "PoorDS4-status" -> "status"
+      const label = [files.length > 1 && part, channelLabel(channel, shown.tag)].filter(Boolean).join(", ");
+      payloads.push({
+        name: `${p.name} (${label})`,
+        filename: payloadFilename(files.length > 1 ? file : p.name, channel, shown.tag, a.name),
+        url: a.browser_download_url,
+        source: `${p.url}/releases`,
+        description: p.description,
+        last_update: shown.date,
+        version: shown.tag,
+        category: p.category,
+        checksum: a.digest?.replace(/^sha256:/, ""), // dropped by JSON.stringify when GitHub has none
+      });
+    }
+    if (files.length) console.log(`${repo} ${channel} ${shown.tag}: ${files.map(a => a.name).join(", ")}`);
+  }
 }
 
 // Never publish an empty source because of an upstream hiccup
