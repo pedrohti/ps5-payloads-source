@@ -27,9 +27,10 @@ function pickPayloads(repo, o, assets) {
 }
 
 // Payload Manager detects updates by the version in the filename ("Name_v1.2.elf" -> base "Name"),
-// so save as "<base>_<tag>.<ext>" like the itsPLK mirror; base has any version-like part removed.
-const payloadFilename = (base, tag, asset) =>
-  `${base.replace(/[_-]v?\d+[\d.a-z-]*/gi, "").replace(/[^\w.-]/g, "")}_${tag.replace(/[^\w.-]/g, "")}${asset.match(PAYLOAD)[0]}`;
+// so save as "<base>_<tag>.<ext>" like the itsPLK mirror; base has any version-like part removed,
+// including one glued to the name ("PoorDS4rc51" -> "PoorDS4").
+const baseName = s => s.replace(/[_-]v?\d+[\d.a-z-]*/gi, "").replace(/(rc|alpha|beta)\d+$/i, "").replace(/[^\w.-]/g, "");
+const payloadFilename = (base, tag, asset) => `${baseName(base)}_${tag.replace(/[^\w.-]/g, "")}${asset.match(PAYLOAD)[0]}`;
 
 const res = await fetch(HUB);
 if (!res.ok) throw new Error(`hub data: ${res.status}`);
@@ -46,7 +47,7 @@ for (const p of projects) {
   if (!rel) continue; // version comes from a plain git tag, no release files
   const files = pickPayloads(repo, o, rel.assets);
   for (const a of files) payloads.push({
-    name: files.length > 1 ? `${p.name} (${a.name.replace(PAYLOAD, "")})` : p.name,
+    name: files.length > 1 && baseName(a.name.replace(PAYLOAD, "")) !== p.name ? `${p.name} (${baseName(a.name.replace(PAYLOAD, ""))})` : p.name,
     filename: payloadFilename(files.length > 1 ? a.name.replace(PAYLOAD, "") : p.name, shown.tag, a.name),
     url: a.browser_download_url,
     source: `${p.url}/releases`,

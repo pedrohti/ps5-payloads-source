@@ -1,5 +1,7 @@
 {
   "drakmor/nanoDNS": { "payload": "nanodns.elf" },
   "phantomptr/ps5upload": { "payload": "ps5upload-*.elf" },
-  "Swordpdf/PS5SX2": { "payload": ["PS5SX2Installer*.elf", "PS5SXHelper*.elf"] }
+  "Swordpdf/PS5SX2": { "payload": ["PS5SX2Installer*.elf", "PS5SXHelper*.elf"] },
+  "ItsBlurf/PoorDS4": { "payload": "PoorDS4*.elf" },
+  "illusionyy/ps-patch-system": { "payload": "patch-bundle-loader-prospero.elf" }
 }
