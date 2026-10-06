@@ -79,3 +79,27 @@ await mkdir("dist", { recursive: true });
 // "name" must come before "payloads" (Payload Manager parser requirement)
 await writeFile("dist/payloads.json", JSON.stringify({ name: "PS5LinkCentalizer", payloads }, null, 2) + "\n");
 console.log(`${payloads.length} payloads`);
+
+// Site index = README rendered by GitHub, dark theme. Relative links (LICENSE, overrides.json) point to the repo.
+const md = await fetch("https://api.github.com/markdown", {
+  method: "POST", headers, body: JSON.stringify({ text: await readFile("README.md", "utf8"), mode: "gfm" }),
+});
+if (!md.ok) throw new Error(`markdown: ${md.status}`);
+await writeFile("dist/index.html", `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PS5 Payloads Source</title>
+<base href="https://github.com/pedrohti/ps5-payloads-source/blob/main/">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.8.1/github-markdown-dark.min.css">
+<style>
+  body { margin:0; background:#0d1117; color-scheme:dark; }
+  .markdown-body { box-sizing:border-box; max-width:980px; margin:0 auto; padding:32px 16px; }
+</style>
+</head>
+<body><article class="markdown-body">
+${await md.text()}
+</article></body>
+</html>
+`);
