@@ -2,7 +2,7 @@ name: Build payloads.json
 
 on:
   schedule:
-    - cron: "30 */6 * * *" # 30 min after the hub refreshes data.json
+    - cron: "20 */3 * * *" # 20 min after the hub refreshes data.json
   push:
     branches: [main]
   workflow_dispatch:
