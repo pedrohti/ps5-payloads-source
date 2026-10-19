@@ -18,6 +18,7 @@ https://pedrohti.github.io/ps5-payloads-source/payloads.json
 - Files are saved as `Name_version.elf`, which is how the manager detects updates (same scheme as the itsPLK mirror, so payloads installed from it show updates here too). Pre-releases use `Name-pre_version.elf`, so both channels can be installed side by side and each one gets its own updates.
 - Projects that go offline leave the hub's list, so they disappear from here automatically.
 - Payloads only published inside a `.zip` are not included (the manager can't extract them).
+- Icons go to `icons.json` in the itsPLK mirror format (`icon_key` = SHA-256 of the data URI, PNG/JPEG up to 128px, under 12 KB). Source, in order: the itsPLK mirror's hand-picked icon for the same repo, the `"icon"` override, the shallowest `icon0`/`icon`/`logo` image in the repo, the owner's GitHub avatar.
 - Result is deployed to GitHub Pages; the repo itself never gets bot commits.
 
 ## Overrides
@@ -26,6 +27,7 @@ https://pedrohti.github.io/ps5-payloads-source/payloads.json
 
 - `"payload"`: glob (or list of globs) picking the file(s) when a release ships more than one payload. Several matches become several entries.
 - `"exclude": true`: leave the project out.
+- `"icon"`: image URL to use as the icon (any size; it gets resized).
 
 ```json
 { "drakmor/nanoDNS": { "payload": "nanodns.elf" } }
@@ -33,7 +35,7 @@ https://pedrohti.github.io/ps5-payloads-source/payloads.json
 
 To add a project, add it to the [hub](https://github.com/pedrohti/PS5LinkCentalizer#add-a-project); it shows up here on the next run.
 
-Local: `node scripts/build.mjs` (Node 20+) writes `dist/payloads.json`. Set `GITHUB_TOKEN` to avoid the 60 req/h limit.
+Local: `npm ci && node scripts/build.mjs` (Node 20+) writes `dist/payloads.json` and `dist/icons.json`. Set `GITHUB_TOKEN` to avoid the 60 req/h limit.
 
 ## Disclaimer
 
